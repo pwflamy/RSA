@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.097,D:\RSA\rsa.dproj=D:\RSA\rsa.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.078,=C:\Users\LOL\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.670,D:\RSA\client.pas=C:\Users\LOL\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.670,D:\RSA\client.dfm=C:\Users\LOL\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.211,D:\RSA\rsa.dproj=C:\Users\LOL\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.444,D:\RSA\rsa.dproj=D:\RSA\rsa.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

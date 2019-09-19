@@ -1,0 +1,428 @@
+unit client;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Math;
+
+type
+  massStroka = array[0..14] of char;
+  massChisel = array[0..14] of byte;
+  TForm1 = class(TForm)
+    pEdit: TEdit;
+    qEdit: TEdit;
+    eEdit: TEdit;
+    pLabel: TLabel;
+    qLabel: TLabel;
+    eLabel: TLabel;
+    calculateND: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    nEdit: TEdit;
+    dEdit: TEdit;
+    Memo2: TMemo;
+    Memo3: TMemo;
+    Memo4: TMemo;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    btnShifr: TButton;
+    Memo6: TMemo;
+    Memo7: TMemo;
+    btnDeShifr: TButton;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    IshodMsg: TEdit;
+    ZashifrMsg: TEdit;
+    procedure calculateNDClick(Sender: TObject);
+    procedure btnShifrClick(Sender: TObject);
+    procedure btnDeShifrClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  n,nEiler: int64;
+  p,q,e,d: integer;
+
+implementation
+
+{$R *.dfm}
+
+function Prostota(x: integer): boolean;
+var
+  i: integer;
+  b: boolean;
+begin
+  b := false;
+  for I := 2 to trunc(sqrt(x))+1 do
+    if x mod i = 0 then
+      b:= true;
+  b := not b;  Prostota := b;
+end;
+
+function Evklid(x,y: int64): int64;
+begin
+  while (x <> 0) and (y <> 0) do
+    if x > y then
+      x := x mod y
+    else
+      y := y mod x;
+  if x <> 0 then
+    Evklid := x
+  else
+    Evklid := y;
+end;
+
+function EvklidRasshiren(a,b: integer): int64;
+var
+  x0,y0,x1,y1,i,q,x,y,r, saveA: integer;
+  cmena: boolean;
+begin
+  x0 := 1;
+  y0 := 0;
+  x1 := 0;
+  y1 := 1;
+  q := 0;
+  r := 0;
+  saveA := a;
+  cmena := false;
+  if b > a then
+  begin
+    cmena := true;
+    i := a;
+    a := b;
+    b := i;
+  end;
+  while (b > 0) do
+    begin
+      q := a div b;
+      r := a mod b;
+      if r = 0 then
+        break;      
+      x := x0 - q * x1;
+      y := y0 - q * y1;
+      a := b;
+      b := r;
+      x0 := x1;
+      x1 := x;
+      y0 := y1;
+      y1 := y;
+    end;
+  if cmena = false  then
+    begin  
+      x := x1;
+      y := y1;
+    end
+  else
+    begin
+      x := y1;
+      y := x1;
+    end;
+ // ShowMessage(IntToStr(x) + ' ' + IntToStr(y));
+  if y < 0 then
+    y := y + saveA;
+  EvklidRasshiren := y;
+end;
+
+function TextToChislStrok(s: string; dlina: byte): string;
+var
+  i,a: byte;
+  x: string;
+begin
+  for i := 1 to dlina do
+    begin
+      case s[i] of
+        'А': a := 11;
+        'Б': a := 12; 
+        'В': a := 13; 
+        'Г': a := 14; 
+        'Д': a := 15; 
+        'Е': a := 16;
+        'Ж': a := 17; 
+        'З': a := 18; 
+        'И': a := 19; 
+        'К': a := 20; 
+        'Л': a := 21; 
+        'М': a := 22;
+        'Н': a := 23; 
+        'О': a := 24; 
+        'П': a := 25; 
+        'Р': a := 26; 
+        'С': a := 27; 
+        'Т': a := 28; 
+        'У': a := 29; 
+        'Ф': a := 30; 
+        'Х': a := 31;
+        'Ц': a := 32;  
+        'Ч': a := 33; 
+        'Ш': a := 34; 
+        'Щ': a := 35; 
+        'Ъ': a := 36; 
+        'Ы': a := 37; 
+        'Ь': a := 38; 
+        'Э': a := 39; 
+        'Ю': a := 40; 
+        'Я': a := 41; 
+        ' ': a := 99; 
+      else
+        a := 66;
+      end;
+        x := x + IntToStr(a);
+    end;
+  TextToChislStrok := x;
+end;
+
+function BlokiToChislStrok(s: string): string;
+var
+  rez: string;
+  i: byte;
+begin
+  for I := 1 to s.Length do
+    if s[i] <> '-' then
+      rez := rez + s[i];
+  BlokiToChislStrok := rez;
+end;
+
+function ChislStrokToText(s: string): string;
+var
+  i,j: byte;
+  a,rez: string;
+  x: array[0..14] of byte;
+begin
+  j := 1;
+  rez := '';
+  for I := 0 to trunc(s.Length / 2) do
+    begin
+      a := s[j];
+      inc(j);
+      a := a + s[j];
+      inc(j);
+      x[i] := StrToInt(a);
+      a := '';
+    end;
+  for I := 0 to trunc(s.Length / 2) do
+    begin
+      case x[i] of
+        11: a := 'А';
+        12: a := 'Б';
+        13: a := 'В';
+        14: a := 'Г';
+        15: a := 'Д';
+        16: a := 'Е';
+        17: a := 'Ж';
+        18: a := 'З';
+        19: a := 'И';
+        20: a := 'К';
+        21: a := 'Л';
+        22: a := 'М';
+        23: a := 'Н';
+        24: a := 'О';
+        25: a := 'П';
+        26: a := 'Р';
+        27: a := 'С';
+        28: a := 'Т';
+        29: a := 'У';
+        30: a := 'Ф';
+        31: a := 'Х';
+        32: a := 'Ц';
+        33: a := 'Ч';
+        34: a := 'Ш';
+        35: a := 'Щ';
+        36: a := 'Ъ';
+        37: a := 'Ы';
+        38: a := 'Ь';
+        39: a := 'Э';
+        40: a := 'Ю';
+        41: a := 'Я';
+        99: a := ' ';
+      else
+        a := '$';
+      end;
+      rez := rez + a;
+    end;
+  ChislStrokToText := rez;
+end;
+
+function ChislStrokToBloki(strokaChisel: string; a: byte): string;
+var
+  s,rez: string;
+  i, dlina: byte;
+begin
+  i := 1;
+  dlina := 2 * a;
+  s := '';
+  s := strokaChisel[i];
+  repeat
+    while StrToInt(s) < n do
+      begin
+        inc(i);
+        if i > dlina then
+          break ;
+        s := s + strokaChisel[i];
+      end;
+    if i > dlina then
+      break;
+    delete(s, s.Length, 1);
+    dec(i);
+    if strokaChisel[i+1] = '0' then
+      begin
+        delete(s, s.Length, 1);
+        dec(i);
+      end;
+    rez := rez + s + '-';
+    inc(i);
+    s := strokaChisel[i];
+  until i >= dlina;
+  rez := rez + s;
+  ChislStrokToBloki := rez;
+end;
+
+function PowerMod(A, K, M: Int64):Int64;
+begin
+  Result := 1;
+  while K <> 0 do
+    if K mod 2 = 0 then
+    begin
+      K := K div 2;
+      A := (A * A) mod M;
+    end
+    else
+    begin
+      Dec(K);
+      Result := (Result * A) mod M;
+    end;
+end;
+
+function Zashifrovat(blockChisel: string): string;
+var
+  i, kolvo: byte;
+  bloki: array[0..14] of integer;
+  s,rez: string;
+begin
+  i := 1;
+  kolvo := 0;
+  repeat
+    repeat
+      s := s + blockChisel[i];
+      inc(i);
+    until (blockChisel[i] = '-') or (i > blockChisel.Length);
+    bloki[kolvo] := StrToInt(s);
+    inc(kolvo);
+    inc(i);
+    s := '';
+  until  i > blockChisel.Length;
+  for i := 0 to kolvo-1 do
+    begin
+      bloki[i] := PowerMod(bloki[i], e, n);
+    end;
+  i := 0;
+  repeat
+    rez := rez + IntToStr(bloki[i]);
+    inc(i);
+    if i < kolvo then
+      rez := rez + '-'
+    else
+      break;
+  until i > kolvo;
+  Zashifrovat := rez;
+end;
+
+function Deshifrovat(blockChisel: string): string;
+var
+  i, kolvo: byte;
+  bloki: array[0..14] of integer;
+  s,rez: string;
+begin
+  i := 1;
+  kolvo := 0;
+  repeat
+    repeat
+      s := s + blockChisel[i];
+      inc(i);
+    until (blockChisel[i] = '-') or (i > blockChisel.Length);
+    bloki[kolvo] := StrToInt(s);
+    inc(kolvo);
+    inc(i);
+    s := '';
+  until  i > blockChisel.Length;
+  for i := 0 to kolvo-1 do
+    begin
+      bloki[i] := PowerMod(bloki[i], d, n);
+    end;
+  i := 0;
+  repeat
+    rez := rez + IntToStr(bloki[i]);
+    inc(i);
+    if i < kolvo then
+      rez := rez + '-'
+    else
+      break;
+  until i > kolvo;
+  Deshifrovat := rez;
+end;
+
+procedure TForm1.btnDeShifrClick(Sender: TObject);
+var
+  strokaChisel, blokiChisel, blokiChiselShifr, DeshifrStroka: string;
+begin
+  blokiChiselShifr := ZashifrMsg.Text;
+  blokiChisel := Deshifrovat(blokiChiselShifr);
+  Memo6.Lines.Add(blokiChisel);
+  strokaChisel := BlokiToChislStrok(blokiChisel);
+  DeshifrStroka :=  ChislStrokToText(strokaChisel);
+  Memo7.Lines.Add(DeshifrStroka);
+end;
+
+procedure TForm1.btnShifrClick(Sender: TObject);
+var
+  i, dlina: byte;
+  s, strokaChisel, blokiChisel, blokiChiselShifr: string;
+begin
+  s := IshodMsg.Text;
+  dlina := s.Length;
+  if dlina > 15 then
+    dlina := 15;
+  strokaChisel := TextToChislStrok(Memo1.Lines[0], dlina);
+  blokiChisel := ChislStrokToBloki(strokaChisel, dlina);
+  Memo2.Lines.Add(blokiChisel);
+  blokiChiselShifr := Zashifrovat(blokiChisel);
+  Memo3.Lines.Add(blokiChiselShifr);
+  Memo5.Lines.Add(blokiChiselShifr);
+end;
+
+procedure TForm1.calculateNDClick(Sender: TObject);
+begin
+  p := StrToInt(pEdit.Text);
+  q := StrToInt(qEdit.Text);
+  e := StrToInt(eEdit.Text);
+  if Prostota(p) = false then
+  begin
+    Showmessage('p должно быть простым!');
+    exit;
+  end;
+  if Prostota(q) = false then
+  begin
+    Showmessage('q должно быть простым!');
+    exit;
+  end;
+  n := p * q;
+  nEiler := (p-1)*(q-1);
+  if Evklid(nEiler,e) <> 1 then
+  begin
+    Showmessage('e должно быть взаимно просто с ' + #966 +'(n) = ' + IntToStr(nEiler));
+    exit;
+  end;
+  d := EvklidRasshiren(nEiler, e);
+  nEdit.Text := IntToStr(n);
+  dEdit.Text := IntToStr(d);
+  btnShifr.Enabled := true;
+end;
+
+end.
